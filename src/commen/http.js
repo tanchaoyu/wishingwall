@@ -16,12 +16,27 @@ const Login = () => {
     });
   });
 };
+const LoginWx = (openid) => {
+  return new Promise(function(resolve) {
+    axios({
+      url: baseUrl + "/user/loginWxWeb",
+      method: "post",
+      params: {
+        openid: openid,
+      },
+    }).then(function(res) {
+      window.console.log(res);
+      resolve(res);
+    });
+  });
+};
 const publishWish = (type, anonymous, to, content) => {
   return new Promise(function(resolve) {
     axios({
       url: baseUrl + "/wish",
       method: "post",
-      params: {
+      headers: { "content-type": "application/json" },
+      data: {
         userid: commen.userid,
         anonymous: anonymous,
         to: to,
@@ -51,11 +66,10 @@ const getHotwish = (page) => {
 const getTypewish = (page, type) => {
   return new Promise(function(resolve) {
     axios({
-      url: baseUrl + "/wish/hot",
+      url: baseUrl + "/wish/list/" + type,
       method: "get",
       params: {
         page: page,
-        type: type,
       },
     }).then((res) => {
       window.console.log(res);
@@ -136,8 +150,31 @@ const getUserMsg = (userid, page) => {
     });
   });
 };
+const getPraise = (id) => {
+  return new Promise(function(resolve) {
+    axios({
+      url: baseUrl + "/wish/praise/" + id,
+      method: "get",
+    }).then((res) => {
+      window.console.log(res);
+      resolve(res);
+    });
+  });
+};
+const getUserinfo = (userid) => {
+  return new Promise(function(resolve) {
+    axios({
+      url: baseUrl + "/user/info/" + userid,
+      method: "get",
+    }).then((res) => {
+      window.console.log(res);
+      resolve(res);
+    });
+  });
+};
 export {
   Login,
+  LoginWx,
   publishWish,
   getHotwish,
   getTypewish,
@@ -146,4 +183,6 @@ export {
   getmywish,
   upLoadimg,
   getUserMsg,
+  getPraise,
+  getUserinfo,
 };

@@ -4,6 +4,7 @@ const index = () => import("../components/index.vue");
 const publish = () => import("../components/publish.vue");
 const edit = () => import("../components/edit.vue");
 const person = () => import("../components/person");
+const wishinfo = () => import("../components/wishinfo");
 vue.use(Router);
 const router = new Router({
   //mode: "history",
@@ -31,6 +32,11 @@ const router = new Router({
       path: "/person",
       name: "person",
       component: person,
+    },
+    {
+      path: "/wishinfo",
+      name: "wishinfo",
+      component: wishinfo,
     },
   ],
 });

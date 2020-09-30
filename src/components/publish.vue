@@ -3,30 +3,30 @@
     <keep-alive>
       <router-view></router-view>
     </keep-alive>
-    <router-link :to="{path:'/edit',query: {type:typelist[0]}}">
+    <router-link :to="{ path: '/edit', query: { type: typelist[0] } }">
       <div class="icon xuyuan">
         <img src="../assets/wishing1.png" alt />
         许愿
       </div>
     </router-link>
-    <router-link :to="{path:'/edit',query: {type:typelist[1]}}">
+    <router-link :to="{ path: '/edit', query: { type: typelist[1] } }">
       <div class="icon biaobai">
         <img src="../assets/confession.png" alt />
         表白
       </div>
     </router-link>
     <router-link to="/index">
-      <div class="icon err">
+      <div class="err">
         <img src="../assets/err.png" alt />
       </div>
     </router-link>
-    <router-link :to="{path:'/edit',query: {type:typelist[2]}}">
+    <router-link :to="{ path: '/edit', query: { type: typelist[2] } }">
       <div class="icon zhufu">
         <img src="../assets/wish.png" alt />
         祝福
       </div>
     </router-link>
-    <router-link :to="{path:'/edit',query: {type:typelist[3]}}">
+    <router-link :to="{ path: '/edit', query: { type: typelist[3] } }">
       <div class="icon tucao">
         <img src="../assets/roast.png" alt />
         吐槽
@@ -40,21 +40,36 @@ export default {
   components: {},
   data() {
     return {
-      typelist: ["xvyuan", "biaobai", "zhufu", "tucao"]
+      typelist: ["xvyuan", "biaobai", "zhufu", "tucao"],
     };
-  }
+  },
 };
 </script>
 <style lang="scss" scoped>
 .container {
+  background: #fbefd5;
+  background-size: 100vw 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
-  margin-top: 80vh;
+  align-items: flex-end;
+  height: 100vh;
   .icon {
     width: 18vw;
     height: 18vw;
     font-size: 4vw;
+    margin-bottom: 10vw;
+    color: #ffcc01;
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+  .err {
+    width: 10vw;
+    height: 10vw;
+    font-size: 4vw;
+    margin-bottom: 10vw;
+    color: #ffcc01;
     img {
       width: 100%;
       height: 100%;
@@ -71,6 +86,9 @@ export default {
   }
   .tucao {
     transform: translateY(-15vw);
+  }
+  .err {
+    transform: translateY(-5vw);
   }
 }
 </style>

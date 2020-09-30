@@ -2,38 +2,69 @@
   <div class="container">
     <div class="topbar">
       <div
-        class="baritem"
-        v-for="(item,index) in baritem"
+        :class="inwhichindex == index ? 'on baritem' : 'baritem'"
+        v-for="(item, index) in baritem"
         :key="index"
         :data-index="item.index"
-      >{{item.name}}</div>
+        @click="changeItem"
+      >
+        {{ item.name }}
+      </div>
     </div>
     <div
       class="info"
       @touchstart="touchStart"
       @touchmove="touchMove"
-      :style="'transform:translateX('+moveX+')'"
+      @touchend="touchEnd"
+      :style="
+        'transform:translateX(' +
+          moveX +
+          ');' +
+          'transition:transform ' +
+          duration +
+          's;'
+      "
     >
       <div class="hotList infoitem">
-        <card v-for="item in wishlist" :key="item" :wish="item"></card>
+        <card
+          v-for="(item, index) in wishlist"
+          :key="index"
+          :wish="item"
+          :limit="true"
+        ></card>
       </div>
-      <div class="square infoitem">
+      <div class="square infoitem" @touchmove.prevent>
         <div class="iconbox">
-          <div class="icon">
-            <img src="../assets/wishing1.png" alt />
-            <p>许愿</p>
+          <div
+            class="icon"
+            v-for="(item, index) in iconList"
+            :key="index"
+            :data-index="index"
+            @click="changeType"
+          >
+            <img :src="item.img" alt />
+            <p :id="index == iconindex ? 'inicon' : ''">{{ item.name }}</p>
           </div>
-          <div class="icon">
-            <img src="../assets/confession.png" alt />
-            <p>表白</p>
-          </div>
-          <div class="icon">
-            <img src="../assets/wish.png" alt />
-            <p>祝福</p>
-          </div>
-          <div class="icon">
-            <img src="../assets/roast.png" alt />
-            <p>吐槽</p>
+        </div>
+        <div class="xuyuanList">
+          <div class="squarebox">
+            <div class="squareavatar">
+              <img
+                :src="
+                  xuyuanLish[squareindex].user_avatar == ''
+                    ? ''
+                    : 'http://wuxinke.top/wish_v4/static/images/' +
+                      xuyuanLish[squareindex].user_avatar
+                "
+                alt
+              />
+            </div>
+            <div class="squarecontent" @click="toWishinfo">
+              <p class="time">{{ xuyuanLish[squareindex].CreatedAt }}</p>
+              <p class="tosb">To:{{ xuyuanLish[squareindex].to }}</p>
+              <p class="wishcontent">{{ xuyuanLish[squareindex].content }}</p>
+            </div>
+            <img src="../assets/next.png" alt="" @click="nextWish" />
           </div>
         </div>
       </div>
@@ -45,8 +76,12 @@
 <script>
 import tarbar from "./tarbar.vue";
 import card from "./card.vue";
-import { Login, getHotwish } from "../commen/http";
+import { LoginWx, getHotwish, getTypewish } from "../commen/http";
 import commen from "../commen/commen";
+import xuyuan from "../assets/wishing1.png";
+import biaobai from "../assets/confession.png";
+import zhufu from "../assets/wish.png";
+import tucao from "../assets/roast.png";
 export default {
   name: "index",
   components: {
@@ -60,30 +95,163 @@ export default {
         { name: "热门", index: 0 },
         { name: "广场", index: 1 },
       ],
+      iconList: [
+        { img: xuyuan, type: "xvyuan", name: "许愿" },
+        { img: biaobai, type: "biaobai", name: "表白" },
+        { img: zhufu, type: "zhufu", name: "祝福" },
+        { img: tucao, type: "tucao", name: "吐槽" },
+      ],
+      loading: true,
+      wishpage: 1,
+      typepage: 2,
+      inwhichindex: 0,
+      squareindex: 0,
+      iconindex: 0,
+      beginX: 0,
       startX: 0,
+      changeX: 0,
+      move: 0,
       moveX: 0,
+      duration: 0,
       transform: "transform:translateX(" + this.moveX + ")",
+      xuyuanLish: [
+        {
+          user_avatar: "default",
+          CreatedAt: "default",
+          to: "default",
+          content: "default",
+        },
+      ],
+      biaobaiLish: null,
+      zhufuList: null,
+      tucaoList: null,
+      timer: 0,
     };
   },
   mounted() {
     if (!commen.userid) {
-      Login().then((res) => {
+      LoginWx("code").then((res) => {
+        console.log(res);
         commen.userid = res.data.userid;
+        commen.nickname = res.data.nickname;
+        commen.avatar = res.data.avatar;
+        commen.signature = res.data.signature;
       });
     }
     getHotwish(1).then((res) => {
       window.console.log(res);
       this.wishlist = res.data;
     });
+    this.getTypewish(1, "xvyuan");
+    this.timer = new Date().getTime();
   },
   methods: {
-    touchStart: function (e) {
+    touchStart: function(e) {
+      this.duration = 0;
       this.startX = e.touches[0].pageX;
+      this.beginX = e.touches[0].pageX;
     },
-    touchMove: function (e) {
-      window.console.log(e);
-      this.moveX = e.touches[0].pageX - this.startX + "px";
-      window.console.log(this.moveX);
+    touchMove: function(e) {
+      let time = new Date().getTime();
+      if (time - this.timer > 1000 / 60) {
+        this.changeX = e.touches[0].pageX - this.startX;
+        window.console.log(this.changeX);
+        if (Math.abs(this.changeX) > 10) {
+          this.move += this.changeX;
+          this.moveX = this.move + "px";
+        }
+        this.startX = e.touches[0].pageX;
+        this.timer = time;
+      }
+    },
+    touchEnd: function() {
+      console.log(window.innerWidth);
+      if (this.startX - this.beginX < -100) {
+        if (this.inwhichindex < this.baritem.length - 1) {
+          this.inwhichindex += 1;
+          this.moveX = -this.inwhichindex * 100 + "vw";
+        } else {
+          this.moveX = -this.inwhichindex * 100 + "vw";
+        }
+      } else if (this.startX - this.beginX > 100) {
+        if (this.inwhichindex > 0) {
+          this.inwhichindex -= 1;
+          this.moveX = -this.inwhichindex * 100 + "vw";
+        } else {
+          this.moveX = -this.inwhichindex * 100 + "vw";
+        }
+      } else {
+        this.moveX = -this.inwhichindex * 100 + "vw";
+      }
+      this.move = -window.innerWidth * this.inwhichindex;
+    },
+    getTypewish: function(page, type) {
+      getTypewish(page, type).then((res) => {
+        console.log(res);
+        this.xuyuanLish = res.data;
+      });
+    },
+    changeItem: function(e) {
+      this.duration = 0.2;
+      let index = e.currentTarget.dataset.index;
+      this.inwhichindex = index;
+      this.moveX = -this.inwhichindex * 100 + "vw";
+      this.move = -window.innerWidth * this.inwhichindex;
+    },
+    changeType: function(e) {
+      this.squareindex = 0;
+      let index = e.currentTarget.dataset.index;
+      let type = this.iconList[index].type;
+      console.log(type);
+      this.getTypewish(1, type);
+      this.iconindex = index;
+    },
+    scroll: function(e) {
+      let time = new Date().getTime();
+      if (time - this.timer > 10) {
+        let clientHeight = e.srcElement.clientHeight;
+        let scrollHeight = e.srcElement.scrollHeight;
+        let scrollTop = e.srcElement.scrollTop;
+        console.log(clientHeight + scrollTop + 100 >= scrollHeight);
+        if (clientHeight + scrollTop + 100 >= scrollHeight && this.onload) {
+          this.wishpage += 1;
+          this.onload = false;
+          getHotwish(commen.userid, this.wishpage).then((res) => {
+            this.onload = true;
+            if (res.data) {
+              for (let i in res.data) {
+                this.mywish.push(i);
+              }
+            }
+          });
+        }
+      }
+    },
+    nextWish: function() {
+      let time = new Date().getTime();
+      if (time - this.timer > 100) {
+        if (this.squareindex < this.xuyuanLish.length) {
+          this.squareindex++;
+          if (this.squareindex >= this.xuyuanLish.length / 2) {
+            let type = this.iconList[this.iconindex].type;
+
+            getTypewish(this.typepage, type).then((res) => {
+              if (res.data) {
+                this.typepage++;
+                for (let i of res.data) {
+                  this.xuyuanLish.push(i);
+                }
+              }
+            });
+          }
+        }
+      }
+    },
+    toWishinfo: function() {
+      this.$router.push({
+        name: "wishinfo",
+        query: { info: this.xuyuanLish[this.squareindex] },
+      });
     },
   },
 };
@@ -95,7 +263,7 @@ export default {
   min-height: 90vh;
   overflow: hidden;
   .topbar {
-    height: 14vw;
+    height: 8vh;
     background-color: #ffcc01;
     display: flex;
     justify-content: center;
@@ -105,11 +273,13 @@ export default {
       color: #ffffff;
       font-size: 4vw;
       font-weight: 600;
-      margin: 2vw;
+      padding: 2vw;
+      margin: 1vw;
     }
   }
   .info {
     width: 200vw;
+    max-height: 82vh;
     display: flex;
   }
   .infoitem {
@@ -122,15 +292,74 @@ export default {
     justify-content: center;
     align-items: center;
   }
-  .square {
+  .xuyuanList {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
   }
+  .square {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .squarecontent {
+    background: #fff;
+    width: 100%;
+    height: 45vh;
+    border-radius: 2vw;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  }
+  .squarecontent p {
+    font-size: 4vw;
+    color: #a5a3a3;
+    margin: 2vw;
+    text-align: start;
+  }
   .iconbox {
     display: flex;
+    justify-content: space-around;
     align-items: center;
+    width: 100vw;
+  }
+  .icon {
+    width: 16vw;
+  }
+  .icon img {
+    width: 12vw;
+    height: 12vw;
+    margin: 1vw;
+  }
+  .icon p {
+    font-size: 3vw;
+    color: #ffcc01;
+  }
+  #inicon {
+    font-size: 4vw;
+  }
+  .squarebox {
+    margin-top: 2vw;
+    width: 80vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .squarebox img {
+    width: 10vw;
+    height: 10vw;
+    margin-top: 2vw;
+  }
+  .squareavatar {
+    width: 20vw;
+    height: 20vw;
+    margin: 3vw;
+  }
+  .squareavatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50% 50%;
   }
   .tarbar {
     position: fixed;
@@ -140,6 +369,9 @@ export default {
   .tarbarin {
     top: 90vh;
     height: 10vh;
+  }
+  .on {
+    border-bottom: 0.5vw solid #fff;
   }
 }
 </style>

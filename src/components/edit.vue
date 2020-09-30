@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <back name="许愿墙"></back>
     <div class="editbox">
       <div class="to">
         To:
@@ -10,7 +11,7 @@
         id="content"
         cols="30"
         rows="10"
-        placeholder="写下你的心愿..."
+        placeholder=" 写下你的心愿..."
         class="content"
         v-model="content"
       ></textarea>
@@ -24,16 +25,19 @@
 </template>
 <script>
 import { publishWish } from "../commen/http";
+import back from "./back.vue";
 export default {
   name: "edit",
-  components: {},
+  components: {
+    back,
+  },
   data() {
     return {
       anonymous: false,
       content: null,
       to: null,
       by: null,
-      type: String
+      type: String,
     };
   },
   mounted() {
@@ -42,8 +46,9 @@ export default {
   methods: {
     send: function() {
       window.console.log(this.content);
+      console.log(this.type);
       publishWish(this.type, this.anonymous, this.to, this.content).then(
-        res => {
+        (res) => {
           window.console.log(res);
           if (res.status == 200) {
             window.alert("发送成功");
@@ -53,8 +58,8 @@ export default {
           }
         }
       );
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>
@@ -78,6 +83,7 @@ export default {
       border-radius: 10px;
       font-size: 42px;
       box-shadow: 1px 4px 4px #c59e9e;
+      padding: 3vw;
     }
     .to {
       height: 20%;
