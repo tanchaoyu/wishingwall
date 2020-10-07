@@ -6,16 +6,19 @@
     <router-link to="/index">
       <div class="icon">
         <img src="../assets/index.png" alt />
+        <div>首页</div>
       </div>
     </router-link>
     <router-link to="/publish">
       <div class="icon">
         <img src="../assets/edit.png" alt />
+        <div>许愿</div>
       </div>
     </router-link>
     <router-link to="/person">
       <div class="icon">
         <img src="../assets/person.png" alt />
+        <div>我的</div>
       </div>
     </router-link>
   </div>
@@ -23,7 +26,7 @@
 <script>
 export default {
   name: "tarbar",
-  components: {}
+  components: {},
 };
 </script>
 <style lang="scss" scoped>
@@ -39,11 +42,16 @@ export default {
     width: 30vw;
     height: 10vh;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    div {
+      color: #fbdc65;
+      font-size: 2vw;
+    }
     img {
-      height: 6vh;
-      width: 6vh;
+      height: 4vh;
+      width: 4vh;
     }
   }
 }

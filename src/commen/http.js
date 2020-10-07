@@ -1,17 +1,12 @@
-import axios from "axios";
 import commen from "../commen/commen";
-const baseUrl = "http://wuxinke.top/wish_v4";
+import axios from "axios";
 
-const Login = () => {
+const getAPP = () => {
   return new Promise(function(resolve) {
     axios({
-      url: baseUrl + "/user/loginwx",
+      url: "",
       method: "post",
-      params: {
-        code: "code",
-      },
     }).then(function(res) {
-      window.console.log(res);
       resolve(res);
     });
   });
@@ -104,15 +99,17 @@ const upLoadimg = (param) => {
     });
   });
 };
-const setuserinfo = (type, info, userid) => {
+const setuserinfo = (type, avatar, userid, nickname, signature) => {
   return new Promise(function(resolve) {
     axios({
       url: baseUrl + "/user/setting/" + type,
       method: "post",
       params: {
         type: type,
-        avatar: info,
+        avatar: avatar,
         userid: userid,
+        nickname: nickname,
+        signature: signature,
       },
     }).then((res) => {
       window.console.log(res);
@@ -173,7 +170,7 @@ const getUserinfo = (userid) => {
   });
 };
 export {
-  Login,
+  getAPP,
   LoginWx,
   publishWish,
   getHotwish,

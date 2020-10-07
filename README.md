@@ -1,29 +1,7 @@
-# wishingwall
+# 许愿墙
 
-## Project setup
-```
-npm install
-```
+## 梦想还是要有的，没准就实现了呢
+1. 程序总体杂乱无章，建议重构
+2. 程序内有多个部分的代码和功能可以封装成组件（滑动切换、节流函数、滚动事件）但均未封装成组件，导致主页代码冗杂，在个人页相似功能只能复制粘贴不能通过组件复用。
+3. 可以预料到用户数据改用sessionstorage存储更好，目前模式不在主页刷新将会出现bug
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).

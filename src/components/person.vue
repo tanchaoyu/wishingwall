@@ -10,10 +10,15 @@
     />
     <div class="userimg" @click="changeimg">
       {{ show }}
-      <img :src="'http://wuxinke.top/wish_v4/static/images/' + userimg" alt />
+      <img :src="'/' + userimg" alt />
     </div>
     <div class="username">
-      <input type="text" placeholder="点击修改用户名" v-model="nickname" />
+      <input
+        type="text"
+        placeholder="点击修改用户名"
+        v-model="nickname"
+        @blur="changenickname"
+      />
     </div>
     <div class="username">
       <input type="text" placeholder="点击修改签名" v-model="signature" />
@@ -53,7 +58,13 @@
       </div>
       <div class="msgList myinfoitem">
         <div class="msg">
-          <div class="praiser"></div>
+          <card
+            v-for="(item, index) in mywish"
+            :key="index"
+            :wish="item"
+            :limit="true"
+            :msg="true"
+          ></card>
         </div>
       </div>
     </div>
@@ -103,12 +114,14 @@ export default {
       transform: "transform:translateX(" + this.moveX + ")",
       duration: 0,
       timer: 0,
+      page: 1,
     };
   },
+
   mounted() {
     this.innerHight = window.innerHeight;
     this.getwish(1);
-    this.getUserMsg();
+    this.getUserMsg(1);
     this.nickname = commen.nickname;
     this.signature = commen.signature;
     this.userimg = commen.avatar;
@@ -125,7 +138,7 @@ export default {
       window.console.log(image.get("file"));
       upLoadimg(image).then((res) => {
         window.console.log(res);
-        setuserinfo("avatar", res.data.image, commen.userid);
+        setuserinfo("avatar", res.data.image, commen.userid, "", "");
       });
       let reader = new FileReader();
       reader.readAsDataURL(file);
@@ -137,8 +150,18 @@ export default {
       };
       window.console.log(file);
     },
-    changenickname: function() {},
-    changesignature: function() {},
+    changenickname: function() {
+      setuserinfo("nickname", "", commen.userid, this.nickname, "").then(() => {
+        commen.nickname = this.nickname;
+      });
+    },
+    changesignature: function() {
+      setuserinfo("signature", "", commen.userid, "", this.signature).then(
+        () => {
+          commen.signature = this.signature;
+        }
+      );
+    },
     getwish: function() {
       getmywish(commen.userid, 1).then((res) => {
         window.console.log(res);
@@ -151,7 +174,6 @@ export default {
         this.praiseList = res.data;
         for (let i of this.praiseList) {
           getUserinfo(i.touserid).then((res) => {
-            console.log(res);
             i.touseravatar = res.data.avatar;
           });
         }
@@ -175,7 +197,6 @@ export default {
       }
     },
     touchEnd: function() {
-      console.log(window.innerWidth);
       if (this.startX - this.beginX < -100) {
         if (this.inwhichindex < this.baritem.length - 1) {
           this.inwhichindex += 1;
@@ -208,14 +229,14 @@ export default {
         let clientHeight = e.srcElement.clientHeight;
         let scrollHeight = e.srcElement.scrollHeight;
         let scrollTop = e.srcElement.scrollTop;
-        console.log(clientHeight + scrollTop + 100 >= scrollHeight);
+
         if (clientHeight + scrollTop + 100 >= scrollHeight && this.onload) {
           this.wishpage += 1;
           this.onload = false;
           getmywish(commen.userid, this.wishpage).then((res) => {
             this.onload = true;
             if (res.data) {
-              for (let i in res.data) {
+              for (let i of res.data) {
                 this.mywish.push(i);
               }
             }
@@ -279,7 +300,7 @@ export default {
     .baritem {
       font-size: 5vw;
       font-weight: 600;
-      margin: 2vw;
+      margin: 2vw 6vw;
     }
     .on {
       border-bottom: 0.5vw solid #ffcc01;
@@ -298,6 +319,9 @@ export default {
       display: flex;
       flex-direction: column;
       align-items: center;
+      .msg div {
+        margin-bottom: 4vw;
+      }
     }
   }
   .tarbar {

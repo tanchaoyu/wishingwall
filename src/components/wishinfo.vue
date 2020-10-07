@@ -4,10 +4,7 @@
     <card :wish="wish"></card>
     <div class="praisectn">
       <div class="praise" v-for="(item, index) in praiseList" :key="index">
-        <img
-          :src="'http://wuxinke.top/wish_v4/static/images/' + item.avatar"
-          alt=""
-        />
+        <img :src="'/' + item.avatar" alt="" />
         <p>{{ item.nickname }}觉得很赞</p>
       </div>
     </div>
@@ -34,10 +31,8 @@ export default {
     this.wish = this.$route.query.info;
   },
   mounted() {
-    console.log(this.wish);
     for (let i of this.wish.praiseList) {
       getUserinfo(i).then((res) => {
-        console.log(res);
         this.praiseList.push(res.data);
       });
     }

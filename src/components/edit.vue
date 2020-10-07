@@ -4,7 +4,7 @@
     <div class="editbox">
       <div class="to">
         To:
-        <input type="text" placeholder="xxx" v-model="to" />
+        <input type="text" placeholder="XXX" v-model="to" />
       </div>
       <textarea
         name
@@ -15,9 +15,20 @@
         class="content"
         v-model="content"
       ></textarea>
-      <div class="by">
-        By:
-        <input type="text" placeholder="xxx" v-model="by" />
+
+      <div
+        :class="anonymous ? 'anonymousbtn anonymousbtnopen' : 'anonymousbtn'"
+        @click="Anonymous"
+      >
+        <div
+          :class="anonymous ? 'leftcircle anonymousbtnopen' : 'leftcircle'"
+        ></div>
+        <div :class="anonymous ? 'anonymous anonymousopen' : 'anonymous'">
+          匿
+        </div>
+        <div
+          :class="anonymous ? 'rightcircle anonymousbtnopen' : 'rightcircle'"
+        ></div>
       </div>
     </div>
     <div class="send" @click="send">发送</div>
@@ -46,7 +57,7 @@ export default {
   methods: {
     send: function() {
       window.console.log(this.content);
-      console.log(this.type);
+
       publishWish(this.type, this.anonymous, this.to, this.content).then(
         (res) => {
           window.console.log(res);
@@ -59,6 +70,13 @@ export default {
         }
       );
     },
+    Anonymous: function() {
+      if (this.anonymous) {
+        this.anonymous = false;
+      } else {
+        this.anonymous = true;
+      }
+    },
   },
 };
 </script>
@@ -69,6 +87,7 @@ export default {
   justify-content: center;
   align-items: center;
   .editbox {
+    margin-top: 10vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -78,46 +97,86 @@ export default {
     color: #aba9a9;
     .content {
       width: 100%;
-      height: 60%;
-      border: 10px solid #fbdc65;
-      border-radius: 10px;
-      font-size: 42px;
-      box-shadow: 1px 4px 4px #c59e9e;
-      padding: 3vw;
+      height: 27.6vh;
+      border: 0.5vw solid #fbdc65;
+      border-radius: 2px;
+      font-size: 4vw;
+      box-shadow: 1px 1px 1px #c59e9e;
+      padding-top: 2vw;
+      min-height: 200px;
     }
     .to {
-      height: 20%;
+      height: 9.2vh;
       width: 40%;
       display: flex;
       justify-content: flex-start;
       align-items: center;
       align-self: flex-start;
-      font-size: 50px;
+      font-size: 4vw;
+      min-height: 20px;
       input {
         height: 100%;
         width: 80%;
-        font-size: 50px;
+        font-size: 4vw;
       }
       input::placeholder {
         color: #aba9a9;
       }
     }
-    .by {
-      height: 20%;
-      width: 40%;
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
+
+    .anonymousbtn {
+      margin-top: 6vw;
+      margin-right: 4vw;
+      min-height: 20px;
       align-self: flex-end;
-      font-size: 50px;
-      input {
-        height: 100%;
-        width: 30%;
-        font-size: 50px;
+      width: 4vw;
+      height: 5vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 0.2vw solid #fce075;
+      border-bottom: 0.2vw solid #fce075;
+      background: #fff;
+      .leftcircle {
+        position: absolute;
+        z-index: -1;
+        width: 5vw;
+        height: 5vw;
+        border-radius: 25px 0 0 25px;
+        border: 0.2vw solid #fce075;
+        transform: translateX(-5vw);
+        border-right: 0px;
       }
-      input::placeholder {
-        color: #aba9a9;
+      .rightcircle {
+        position: absolute;
+        z-index: -1;
+        width: 5vw;
+        height: 5vw;
+        border-radius: 0 25px 25px 0;
+        border: 0.2vw solid #fce075;
+        border-left: 0px;
+        transform: translateX(3vw);
       }
+      .anonymous {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+        width: 5vw;
+        height: 5vw;
+        border-radius: 50% 50%;
+        background: #e0ba22;
+        color: #fff;
+        font-size: 2vw;
+        transform: translateX(-5vw);
+        transition: transform 0.5s;
+      }
+      .anonymousopen {
+        transform: translateX(3vw);
+      }
+    }
+    .anonymousbtnopen {
+      background: #fce075;
     }
   }
   .send {
@@ -125,12 +184,13 @@ export default {
     height: 6vh;
     background-color: #ffcc01;
     border-radius: 10px;
-    font-size: 50px;
+    font-size: 4vw;
     color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 10vw;
+    min-height: 50px;
   }
 }
 </style>

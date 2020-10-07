@@ -10,6 +10,9 @@
 export default {
   name: "app",
   components: {},
+  mounted() {
+    window.scrollTo(0, 1);
+  },
 };
 </script>
 
