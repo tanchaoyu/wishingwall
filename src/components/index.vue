@@ -25,13 +25,16 @@
           's;'
       "
     >
-      <div class="hotList infoitem">
+      <div class="hotList infoitem" v-if="wishlist[0]" @scroll="scroll">
         <card
           v-for="(item, index) in wishlist"
           :key="index"
           :wish="item"
           :limit="true"
         ></card>
+      </div>
+      <div class="infoitem" v-else>
+        快来许下第一条愿望吧
       </div>
       <div class="square infoitem" @touchmove.prevent>
         <div class="iconbox">
@@ -47,13 +50,13 @@
           </div>
         </div>
         <div class="xuyuanList">
-          <div class="squarebox">
+          <div class="squarebox" v-if="xuyuanLish[0]">
             <div class="squareavatar">
               <img
                 :src="
                   xuyuanLish[squareindex].user_avatar == ''
                     ? ''
-                    : '/' + xuyuanLish[squareindex].user_avatar
+                    : '/static/images/' + xuyuanLish[squareindex].user_avatar
                 "
                 alt
               />
@@ -80,20 +83,17 @@
   </div>
 </template>
 <script>
-import axios from "axios";
 import unheart from "../assets/unheart.png";
 import heart from "../assets/heart.png";
 import tarbar from "./tarbar.vue";
 import card from "./card.vue";
 import {
-  getAPP,
   LoginWx,
   getHotwish,
   getTypewish,
   getPraise,
   praise,
 } from "../commen/http";
-import commen from "../commen/commen";
 import xuyuan from "../assets/wishing1.png";
 import biaobai from "../assets/confession.png";
 import zhufu from "../assets/wish.png";
@@ -106,7 +106,7 @@ export default {
   },
   data() {
     return {
-      wishlist: null,
+      wishlist: [],
       baritem: [
         { name: "热门", index: 0 },
         { name: "广场", index: 1 },
@@ -118,7 +118,7 @@ export default {
         { img: tucao, type: "tucao", name: "吐槽" },
       ],
       loading: true,
-      wishpage: 1,
+      wishpage: 2,
       typepage: 2,
       inwhichindex: 0,
       squareindex: 0,
@@ -129,15 +129,9 @@ export default {
       move: 0,
       moveX: 0,
       duration: 0,
+      onload: true,
       transform: "transform:translateX(" + this.moveX + ")",
-      xuyuanLish: [
-        {
-          user_avatar: "default",
-          CreatedAt: "default",
-          to: "default",
-          content: "default",
-        },
-      ],
+      xuyuanLish: [],
       praise: false,
       heart: heart,
       unheart: unheart,
@@ -146,43 +140,19 @@ export default {
     };
   },
   mounted() {
-    if (!commen.userid) {
-      getAPP().then((res) => {
-        if (res.data) {
-          let url = window.location.search;
-          let params = new URLSearchParams(url);
-          let code = params.get("code");
-          axios({
-            url: "https://api.weixin.qq.com/sns/oauth2/access_token",
-            method: "get",
-            headers: { "content-type": "application/x-www-form-urlencoded" },
-            params: {
-              //公众号id
-              appid: res.data.appId,
-              //公众号secret
-              secret: res.data.secret,
-              code: code,
-              grant_type: "authorization_code",
-            },
-          }).then(function(res) {
-            let openid = res.openid;
-            if (openid) {
-              LoginWx(openid).then((res) => {
-                commen.userid = res.data.userid;
-                commen.nickname = res.data.nickname;
-                commen.avatar = res.data.avatar;
-                commen.signature = res.data.signature;
-              });
-            }
-          });
-        }
+    if (!sessionStorage.getItem("userid")) {
+      let url = window.location.search;
+      let params = new URLSearchParams(url);
+      let openid = params.get("openid");
+      LoginWx(openid).then((res) => {
+        sessionStorage.setItem("userid", res.data.userid);
+        sessionStorage.setItem("avatar", res.data.avatar);
+        sessionStorage.setItem("nickname", res.data.nickname);
+        sessionStorage.setItem("signature", res.data.signature);
+        window.console.log(window.location);
+        window.location.href =
+          window.location.origin + "/?state=ww4" + window.location.hash;
       });
-      /* LoginWx("code").then((res) => {
-        commen.userid = res.data.userid;
-        commen.nickname = res.data.nickname;
-        commen.avatar = res.data.avatar;
-        commen.signature = res.data.signature;
-      }); */
     }
     getHotwish(1).then((res) => {
       this.wishlist = res.data;
@@ -251,24 +221,23 @@ export default {
       let index = e.currentTarget.dataset.index;
       let type = this.iconList[index].type;
       this.getTypewish(1, type);
-
       this.iconindex = index;
     },
     scroll: function(e) {
       let time = new Date().getTime();
       if (time - this.timer > 10) {
+        this.timer = time;
         let clientHeight = e.srcElement.clientHeight;
         let scrollHeight = e.srcElement.scrollHeight;
         let scrollTop = e.srcElement.scrollTop;
-
         if (clientHeight + scrollTop + 100 >= scrollHeight && this.onload) {
-          this.wishpage += 1;
           this.onload = false;
-          getHotwish(commen.userid, this.wishpage).then((res) => {
+          getHotwish(this.wishpage).then((res) => {
             this.onload = true;
             if (res.data) {
-              for (let i in res.data) {
-                this.mywish.push(i);
+              this.wishpage += 1;
+              for (let i of res.data) {
+                this.wishlist.push(i);
               }
             }
           });
@@ -278,6 +247,7 @@ export default {
     lastWish: function() {
       let time = new Date().getTime();
       if (time - this.timer > 100) {
+        this.timer = time;
         if (this.squareindex > 0) {
           this.squareindex--;
           this.getPraise(this.xuyuanLish[this.squareindex].ID);
@@ -289,6 +259,7 @@ export default {
     nextWish: function() {
       let time = new Date().getTime();
       if (time - this.timer > 100) {
+        this.timer = time;
         if (this.squareindex < this.xuyuanLish.length - 1) {
           this.squareindex++;
           this.getPraise(this.xuyuanLish[this.squareindex].ID);
@@ -319,7 +290,7 @@ export default {
         if (res.data != null) {
           this.xuyuanLish[this.squareindex].praiseList = res.data;
           let userid = function() {
-            return commen.userid;
+            return sessionStorage.getItem("userid");
           };
           let praised = res.data.find(userid);
           if (praised) {
@@ -333,16 +304,21 @@ export default {
       });
     },
     Praise: function() {
-      if (this.praise) {
-        window.console.log(this.praise);
-      } else {
-        praise(this.xuyuanLish[this.squareindex].ID, commen.userid).then(
-          (res) => {
+      let time = new Date().getTime();
+      if (time - this.timer > 100) {
+        this.timer = time;
+        if (this.praise) {
+          window.console.log(this.praise);
+        } else {
+          praise(
+            this.xuyuanLish[this.squareindex].ID,
+            sessionStorage.getItem("userid")
+          ).then((res) => {
             window.console.log(res);
             this.praise = true;
             this.xuyuanLish[this.squareindex].praise++;
-          }
-        );
+          });
+        }
       }
     },
   },
@@ -383,6 +359,7 @@ export default {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
+    overflow: scroll;
   }
   .xuyuanList {
     display: flex;
@@ -404,6 +381,9 @@ export default {
     flex-direction: column;
     border-radius: 2vw;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    .wishcontent {
+      overflow: hidden;
+    }
     .changeicon {
       position: absolute;
       margin-top: 30vh;
@@ -411,7 +391,7 @@ export default {
       display: flex;
       flex-direction: column;
       align-self: flex-end;
-      transform: translate(-30px);
+      transform: translate(30px);
       img {
         width: 8vw;
         height: 8vw;

@@ -1,16 +1,5 @@
-import commen from "../commen/commen";
 import axios from "axios";
-
-const getAPP = () => {
-  return new Promise(function(resolve) {
-    axios({
-      url: "",
-      method: "post",
-    }).then(function(res) {
-      resolve(res);
-    });
-  });
-};
+const baseUrl = "";
 const LoginWx = (openid) => {
   return new Promise(function(resolve) {
     axios({
@@ -25,14 +14,14 @@ const LoginWx = (openid) => {
     });
   });
 };
-const publishWish = (type, anonymous, to, content) => {
+const publishWish = (userid, type, anonymous, to, content) => {
   return new Promise(function(resolve) {
     axios({
       url: baseUrl + "/wish",
       method: "post",
       headers: { "content-type": "application/json" },
       data: {
-        userid: commen.userid,
+        userid: userid,
         anonymous: anonymous,
         to: to,
         content: content,
@@ -169,6 +158,20 @@ const getUserinfo = (userid) => {
     });
   });
 };
+const deleteWish = (wishid, userid) => {
+  return new Promise(function(resolve) {
+    axios({
+      url: baseUrl + "/wish/delewish/" + wishid,
+      method: "post",
+      data: {
+        userid: userid,
+      },
+    }).then((res) => {
+      window.console.log(res);
+      resolve(res);
+    });
+  });
+};
 export {
   getAPP,
   LoginWx,
@@ -182,4 +185,5 @@ export {
   getUserMsg,
   getPraise,
   getUserinfo,
+  deleteWish,
 };

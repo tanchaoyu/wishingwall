@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" @touchmove.prevent>
     <keep-alive>
       <router-view></router-view>
     </keep-alive>
@@ -53,12 +53,16 @@ export default {
   justify-content: center;
   align-items: flex-end;
   height: 100vh;
+  a {
+    user-select: none;
+  }
   .icon {
     width: 18vw;
     height: 18vw;
     font-size: 4vw;
     margin-bottom: 10vw;
     color: #ffcc01;
+    user-select: none;
     img {
       width: 100%;
       height: 100%;

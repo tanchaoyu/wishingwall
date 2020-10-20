@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" @touchmove.prevent>
     <back name="许愿墙"></back>
     <div class="editbox">
       <div class="to">
@@ -57,18 +57,29 @@ export default {
   methods: {
     send: function() {
       window.console.log(this.content);
-
-      publishWish(this.type, this.anonymous, this.to, this.content).then(
-        (res) => {
-          window.console.log(res);
-          if (res.status == 200) {
-            window.alert("发送成功");
-            this.$router.push({ name: "index" });
-          } else {
-            window.alert("发送失败");
-          }
+      if (this.to || this.content) {
+        if (this.content.length > 400 || this.to.length > 18) {
+          window.alert("字数不能超过400字且to不能超过18个字");
+        } else {
+          publishWish(
+            sessionStorage.getItem("userid"),
+            this.type,
+            this.anonymous,
+            this.to,
+            this.content
+          ).then((res) => {
+            window.console.log(res);
+            if (res.status == 200) {
+              window.alert("发送成功");
+              this.$router.push({ name: "index" });
+            } else {
+              window.alert("发送失败");
+            }
+          });
         }
-      );
+      } else {
+        window.alert("不能to和content都为空");
+      }
     },
     Anonymous: function() {
       if (this.anonymous) {
@@ -104,6 +115,7 @@ export default {
       box-shadow: 1px 1px 1px #c59e9e;
       padding-top: 2vw;
       min-height: 200px;
+      overflow: scroll;
     }
     .to {
       height: 9.2vh;

@@ -3,14 +3,14 @@
     <div class="msg" v-show="msg ? true : false">
       <div class="praiseavatar">
         <img
-          :src="item.avatar ? '/' + item.avatar : ''"
+          :src="item.avatar ? '/static/images/' + item.avatar : ''"
           alt=""
-          v-for="(item, index) in praiseList"
+          v-for="(item, index) in showList"
           :key="index"
         />
       </div>
       <div class="praisename">
-        <div v-for="(item, index) in praiseList" :key="index">
+        <div v-for="(item, index) in showList" :key="index">
           {{ item.nickname }},
         </div>
       </div>
@@ -18,9 +18,12 @@
     </div>
     <div :class="limit ? 'card ' : 'card wishinfo'" @click="toWishinfo">
       <div class="userimg" v-show="!msg">
-        <img :src="'/' + wish.user_avatar" alt />
+        <img :src="'/static/images/' + wish.user_avatar" alt />
       </div>
       <div :class="msg ? 'content msgcontent' : 'content'">
+        <div class="del" v-show="owner ? true : false" @click.stop="deleteWish">
+          <img :src="dele" alt="" />
+        </div>
         <div class="to">To:{{ wish.to }}</div>
         <div class="time">{{ wish.UpdatedAt }}</div>
         <div class="contentp">{{ wish.content }}</div>
@@ -33,12 +36,12 @@
     </div>
   </div>
 </template>
-
 <script>
 import unheart from "../assets/unheart.png";
 import heart from "../assets/heart.png";
-import { praise, getPraise, getUserinfo } from "../commen/http";
-import commen from "../commen/commen";
+import dele from "../assets/del.png";
+import { praise, getPraise, getUserinfo, deleteWish } from "../commen/http";
+
 export default {
   name: "card",
   props: {
@@ -55,17 +58,30 @@ export default {
       heart: heart,
       unheart: unheart,
       praiseList: [],
+      showList: [],
+      timer: 0,
+      dele: dele,
+      owner: false,
     };
   },
   created() {},
   mounted() {
+    if (this.wish.userid == sessionStorage.getItem("userid")) {
+      this.owner = true;
+    }
     getPraise(this.wish.ID).then((res) => {
       if (res.data != null) {
         this.wish.praiseList = res.data;
-        let userid = function() {
-          return commen.userid;
-        };
-        let praised = res.data.find(userid);
+        let userid = sessionStorage.getItem("userid");
+        let praised = false;
+        for (let i of res.data) {
+          window.console.log(userid);
+          window.console.log(i);
+          if (i == userid) {
+            praised = true;
+            break;
+          }
+        }
         if (praised) {
           this.praise = true;
         } else {
@@ -77,6 +93,9 @@ export default {
       for (let i of this.wish.praiseList) {
         getUserinfo(i).then((res) => {
           this.praiseList.push(res.data);
+          if (this.showList.length < 5) {
+            this.showList.push(res.data);
+          }
         });
       }
     });
@@ -84,21 +103,37 @@ export default {
       "+08:00",
       " "
     );
+    this.timer = new Date().getTime();
   },
   methods: {
     Praise: function() {
-      if (this.praise) {
-        window.console.log(this.praise);
-      } else {
-        praise(this.wish.ID, commen.userid).then((res) => {
-          window.console.log(res);
-          this.praise = true;
-          this.wish.praise++;
-        });
+      let time = new Date().getTime();
+      if (time - this.timer > 100) {
+        if (this.praise) {
+          window.console.log(this.praise);
+        } else {
+          praise(this.wish.ID, sessionStorage.getItem("userid")).then((res) => {
+            window.console.log(res);
+            this.praise = true;
+            this.wish.praise++;
+          });
+        }
       }
     },
     toWishinfo: function() {
       this.$router.push({ name: "wishinfo", query: { info: this.wish } });
+    },
+    deleteWish: function() {
+      if (this.wish.userid == sessionStorage.getItem("userid")) {
+        let confirm = window.confirm("确认删除");
+        if (confirm) {
+          deleteWish(this.wish.ID, sessionStorage.getItem("userid")).then(
+            () => {
+              this.$router.push({ name: "index" });
+            }
+          );
+        }
+      }
     },
   },
 };
@@ -121,6 +156,7 @@ export default {
     }
   }
   .praisename {
+    display: flex;
     div {
       font-size: 2vw;
     }
@@ -148,10 +184,22 @@ export default {
     }
   }
   .content {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     width: 70vw;
+    .del {
+      position: absolute;
+      align-self: flex-end;
+      width: 6vw;
+      height: 6vw;
+      transform: translate(-3vw);
+      img {
+        width: 100%;
+        height: 100%;
+      }
+    }
     .to {
       font-size: 3vw;
       margin-top: 1vw;
@@ -163,11 +211,11 @@ export default {
     }
     .contentp {
       width: 80%;
-      height: 16vh;
+      height: 12vh;
       margin-left: 2vw;
       font-size: 3vw;
       text-align: start;
-      text-overflow: ellipsis;
+      overflow: hidden;
     }
     .by {
       font-size: 2vw;
@@ -191,13 +239,15 @@ export default {
 }
 .wishinfo {
   width: 90vw;
-  height: 46vh;
+  min-height: 46vh;
+  height: auto;
   margin-top: 4vw;
   .content {
     .contentp {
       width: 90%;
       margin-top: 4vw;
-      height: 40vh;
+      min-height: 30vh;
+      height: auto;
     }
   }
 }

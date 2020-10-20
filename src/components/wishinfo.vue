@@ -4,7 +4,7 @@
     <card :wish="wish"></card>
     <div class="praisectn">
       <div class="praise" v-for="(item, index) in praiseList" :key="index">
-        <img :src="'/' + item.avatar" alt="" />
+        <img :src="'/static/images/' + item.avatar" alt="" />
         <p>{{ item.nickname }}觉得很赞</p>
       </div>
     </div>

@@ -10,7 +10,7 @@
     />
     <div class="userimg" @click="changeimg">
       {{ show }}
-      <img :src="'/' + userimg" alt />
+      <img :src="'/static/images/' + userimg" alt />
     </div>
     <div class="username">
       <input
@@ -21,7 +21,12 @@
       />
     </div>
     <div class="username">
-      <input type="text" placeholder="点击修改签名" v-model="signature" />
+      <input
+        type="text"
+        placeholder="点击修改签名"
+        v-model="signature"
+        @blur="changesignature"
+      />
     </div>
     <div class="topbar">
       <div
@@ -76,7 +81,6 @@
 <script>
 import tarbar from "./tarbar.vue";
 import card from "./card.vue";
-import commen from "../commen/commen";
 import {
   setuserinfo,
   getmywish,
@@ -93,7 +97,7 @@ export default {
   data() {
     return {
       innerHight: 0,
-      wishpage: 1,
+      wishpage: 2,
       nickname: null,
       signature: null,
       userimg: null,
@@ -122,54 +126,61 @@ export default {
     this.innerHight = window.innerHeight;
     this.getwish(1);
     this.getUserMsg(1);
-    this.nickname = commen.nickname;
-    this.signature = commen.signature;
-    this.userimg = commen.avatar;
+    this.nickname = sessionStorage.getItem("nickname");
+    this.signature = sessionStorage.getItem("signature");
+    this.userimg = sessionStorage.getItem("avatar");
   },
   methods: {
     changeimg: function() {
       this.$refs.input.dispatchEvent(new MouseEvent("click"));
     },
     uploadImg: function() {
-      let that = this;
       let file = this.$refs.input.files[0];
       let image = new FormData();
       image.append("file", file);
       window.console.log(image.get("file"));
       upLoadimg(image).then((res) => {
         window.console.log(res);
-        setuserinfo("avatar", res.data.image, commen.userid, "", "");
+        setuserinfo(
+          "avatar",
+          res.data.image,
+          sessionStorage.getItem("userid"),
+          "",
+          ""
+        );
+        this.userimg = res.data.image;
       });
-      let reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (res) => {
-        let img = res.target;
-        window.console.log(img);
-        that.userimg = img.result;
-        that.show = null;
-      };
-      window.console.log(file);
     },
     changenickname: function() {
-      setuserinfo("nickname", "", commen.userid, this.nickname, "").then(() => {
-        commen.nickname = this.nickname;
+      setuserinfo(
+        "nickname",
+        "",
+        sessionStorage.getItem("userid"),
+        this.nickname,
+        ""
+      ).then(() => {
+        sessionStorage.setItem("nickname", this.nickname);
       });
     },
     changesignature: function() {
-      setuserinfo("signature", "", commen.userid, "", this.signature).then(
-        () => {
-          commen.signature = this.signature;
-        }
-      );
+      setuserinfo(
+        "signature",
+        "",
+        sessionStorage.getItem("userid"),
+        "",
+        this.signature
+      ).then(() => {
+        sessionStorage.setItem("signature", this.signature);
+      });
     },
     getwish: function() {
-      getmywish(commen.userid, 1).then((res) => {
+      getmywish(sessionStorage.getItem("userid"), 1).then((res) => {
         window.console.log(res);
         this.mywish = res.data;
       });
     },
     getUserMsg: function(page) {
-      getUserMsg(commen.userid, page).then((res) => {
+      getUserMsg(sessionStorage.getItem("userid"), page).then((res) => {
         window.console.log(res);
         this.praiseList = res.data;
         for (let i of this.praiseList) {
@@ -231,16 +242,18 @@ export default {
         let scrollTop = e.srcElement.scrollTop;
 
         if (clientHeight + scrollTop + 100 >= scrollHeight && this.onload) {
-          this.wishpage += 1;
           this.onload = false;
-          getmywish(commen.userid, this.wishpage).then((res) => {
-            this.onload = true;
-            if (res.data) {
-              for (let i of res.data) {
-                this.mywish.push(i);
+          getmywish(sessionStorage.getItem("userid"), this.wishpage).then(
+            (res) => {
+              this.onload = true;
+              if (res.data) {
+                this.wishpage += 1;
+                for (let i of res.data) {
+                  this.mywish.push(i);
+                }
               }
             }
-          });
+          );
         }
       }
     },
@@ -267,6 +280,7 @@ export default {
     margin: 2vw;
     width: 20vw;
     height: 20vw;
+    min-height: 40px;
     border-radius: 50% 50%;
     font-size: 4vw;
     background: cornsilk;
@@ -285,6 +299,7 @@ export default {
     margin: 2vw;
     font-size: 4vw;
     text-align: center;
+    min-height: 10px;
     &::placeholder {
       text-align: center;
     }
