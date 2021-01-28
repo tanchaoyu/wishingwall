@@ -173,7 +173,7 @@ const deleteWish = (wishid, userid) => {
   });
 };
 export {
-  getAPP,
+  //getAPP,
   LoginWx,
   publishWish,
   getHotwish,
